@@ -31,26 +31,197 @@ kubectl config current-context  # Should point to your GKE cluster
 
 ### Local Development (k3d)
 
+#### Step 1: Install Prerequisites
+
 ```bash
-# 1. Start local cluster
+# Install k3d
+# macOS
+brew install k3d kubectl
+
+# Linux
+curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+
+# Verify installation
+k3d --version
+kubectl version --client
+```
+
+#### Step 2: Install Model Zoo CLI
+
+```bash
+# Clone and install
+git clone https://github.com/lsb/ray-inference-menagerie-claude.git
+cd ray-inference-menagerie-claude
+pip install -e .
+
+# Verify CLI
+model-zoo --help
+```
+
+#### Step 3: Start Local Cluster
+
+```bash
+# Start k3d cluster with fake GPU support
 ./scripts/dev_cluster.sh
 
-# 2. Deploy CLIP model
-model-zoo deploy clip-vit-base \
-  --weights gs://your-bucket/clip/weights \
+# Verify cluster
+kubectl get nodes
+```
+
+#### Step 4: Build and Deploy Test Model
+
+```bash
+# Build Docker image locally
+docker build -t model-zoo-clip-test:latest -f infra/docker/Dockerfile.model .
+
+# Import image into k3d
+k3d image import model-zoo-clip-test:latest -c model-zoo-dev
+
+# Deploy CLIP model (uses CPU in local mode)
+model-zoo deploy clip-test \
+  --weights gs://fake-bucket/clip/weights \
   --gpu nvidia-tesla-t4 \
   --target k3d
+```
 
-# 3. Run inference
-model-zoo infer clip-vit-base \
-  --file image.jpg \
-  --text "a photo of a cat"
+#### Step 5: Create Test Image
 
-# 4. View logs
-model-zoo logs clip-vit-base --tail
+```bash
+# Create a simple test image
+cat > create_test_image.py << 'EOF'
+from PIL import Image
+import numpy as np
 
-# 5. List models
+# Create a red square with white center
+img = Image.new('RGB', (224, 224), color='red')
+pixels = img.load()
+for i in range(80, 144):
+    for j in range(80, 144):
+        pixels[i, j] = (255, 255, 255)
+        
+img.save('test_image.jpg')
+print("Created test_image.jpg")
+EOF
+
+python create_test_image.py
+```
+
+#### Step 6: Run Inference
+
+```bash
+# Check deployment status
 model-zoo list
+
+# Run CLIP inference
+model-zoo infer clip-test \
+  --file test_image.jpg \
+  --text "a red square with a white center"
+
+# View logs
+model-zoo logs clip-test --tail
+```
+
+#### Step 7: Clean Up
+
+```bash
+# Delete the model
+model-zoo delete clip-test --yes
+
+# Stop k3d cluster (optional)
+k3d cluster delete model-zoo-dev
+```
+
+#### Troubleshooting Local Deployment
+
+If you encounter issues:
+
+```bash
+# Check pod status
+kubectl get pods -A
+
+# View detailed logs
+kubectl logs -l app=model-zoo
+
+# Check services
+kubectl get svc
+
+# Verify image imports
+docker exec k3d-model-zoo-dev-agent-0 crictl images
+
+# Manual port-forward for debugging
+kubectl port-forward svc/clip-test-ray-head 10001:10001 8265:8265
+
+# Test Ray connection directly
+python -c "
+import ray
+ray.init('ray://localhost:10001')
+print('✓ Connected to Ray')
+ray.shutdown()
+"
+```
+
+**Note**: Local k3d deployment uses fake GPU labels and runs on CPU for testing purposes.
+
+#### Alternative: Manual Testing with Basic Ray
+
+If the CLI deployment has issues, you can test with basic Ray:
+
+```bash
+# 1. Create simple Ray deployment
+cat > test-ray.yaml << 'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-ray-head
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-ray
+  template:
+    metadata:
+      labels:
+        app: test-ray
+    spec:
+      containers:
+      - name: ray-head
+        image: rayproject/ray:2.9.0
+        command: ["ray", "start", "--head", "--port=6379", "--dashboard-host=0.0.0.0"]
+        ports:
+        - containerPort: 10001
+        - containerPort: 8265
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: test-ray-head
+spec:
+  selector:
+    app: test-ray
+  ports:
+  - name: client
+    port: 10001
+  - name: dashboard
+    port: 8265
+EOF
+
+# 2. Deploy and test
+kubectl apply -f test-ray.yaml
+kubectl wait --for=condition=ready pod -l app=test-ray --timeout=300s
+kubectl port-forward svc/test-ray-head 10001:10001 8265:8265 &
+
+# 3. Test connection
+python -c "
+import ray
+ray.init('ray://localhost:10001')
+print('✓ Ray connection successful!')
+print('Dashboard: http://localhost:8265')
+ray.shutdown()
+"
+
+# 4. Clean up
+kubectl delete -f test-ray.yaml
+kill %1  # Stop port-forward
 ```
 
 ### Production Deployment (GKE)
