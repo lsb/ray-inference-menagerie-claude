@@ -33,6 +33,10 @@ dev = [
     "pytest-subprocess>=1.5.0",
     "ruff>=0.1.0",
 ]
+test-generation = [
+    "diffusers>=0.21.0",
+    "accelerate>=0.20.0",
+]
 
 [project.scripts]
 model-zoo = "model_zoo.cli:app"

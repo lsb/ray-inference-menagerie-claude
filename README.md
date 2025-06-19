@@ -141,6 +141,13 @@ python scripts/create_test_image.py --type simple
 # This creates test_images/test_image.jpg - a red square with white center
 # You can also create other test images:
 # python scripts/create_test_image.py --type all  # Creates multiple test images
+
+# Or use the included Stable Diffusion generated test images:
+ls test_images/fixtures/
+# cat_office_typing.jpg    - Cat typing in office (indoor cat scene)
+# dog_office_typing.jpg    - Dog typing in office (indoor dog scene)  
+# cat_mountain_sunrise.jpg - Cat on mountain at sunrise (outdoor cat scene)
+# dog_mountain_sunrise.jpg - Dog on mountain at sunrise (outdoor dog scene)
 ```
 
 #### Step 6: Run Inference
@@ -150,11 +157,14 @@ python scripts/create_test_image.py --type simple
 model-zoo list
 # Alternative: python -m model_zoo.cli list
 
-# Run CLIP inference
+# Run CLIP inference (test cat vs dog classification)
 model-zoo infer clip-test \
-  --file test_images/test_image.jpg \
-  --text "a red square with a white center"
-# Alternative: python -m model_zoo.cli infer clip-test --file test_images/test_image.jpg --text "a red square with a white center"
+  --file test_images/fixtures/cat_office_typing.jpg \
+  --text "a cat typing at a computer"
+
+# Test with different prompts to see model accuracy:
+# model-zoo infer clip-test --file test_images/fixtures/cat_office_typing.jpg --text "a dog"
+# model-zoo infer clip-test --file test_images/fixtures/dog_mountain_sunrise.jpg --text "a dog on a mountain"
 
 # View logs
 model-zoo logs clip-test --tail
@@ -444,6 +454,9 @@ pytest tests/unit -v
 
 # Performance tests (CPU)
 pytest tests/perf -v
+
+# Model validation tests with Stable Diffusion images
+pytest tests/perf/test_model_validation.py -v -s
 
 # End-to-end tests (requires k3d)
 pytest tests/e2e -v

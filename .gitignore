@@ -59,7 +59,8 @@ ray_session_*/
 temp/
 tmp/
 
-# Generated test images
-test_images/
-*.jpg
-*.png
+# Generated test images (but keep fixtures)
+test_images/sd_generated/
+test_images/*.jpg
+test_images/*.png
+!test_images/fixtures/
