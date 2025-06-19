@@ -142,7 +142,7 @@ python scripts/create_test_image.py --type simple
 # You can also create other test images:
 # python scripts/create_test_image.py --type all  # Creates multiple test images
 
-# Or use the included Stable Diffusion generated test images:
+# Or use the included Stable Diffusion XL generated test images:
 ls test_images/fixtures/
 # cat_office_typing.jpg    - Cat typing in office (indoor cat scene)
 # dog_office_typing.jpg    - Dog typing in office (indoor dog scene)  

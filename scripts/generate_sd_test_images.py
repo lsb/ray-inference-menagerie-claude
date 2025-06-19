@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Generate test images using Stable Diffusion for Model Zoo testing."""
+"""Generate test images using Stable Diffusion XL for Model Zoo testing."""
 import argparse
 from pathlib import Path
 import torch
-from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionXLPipeline
 import logging
 
 # Configure logging
@@ -12,17 +12,18 @@ logger = logging.getLogger(__name__)
 
 
 def setup_pipeline():
-    """Set up Stable Diffusion pipeline."""
-    model_id = "runwayml/stable-diffusion-v1-5"
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    """Set up Stable Diffusion XL pipeline."""
+    model_id = "stabilityai/stable-diffusion-xl-base-1.0"
+    device = "cpu"  # Force CPU usage as requested
     
-    logger.info(f"Loading Stable Diffusion 1.5 on {device}...")
+    logger.info(f"Loading Stable Diffusion XL on {device}...")
     
-    pipeline = StableDiffusionPipeline.from_pretrained(
+    pipeline = StableDiffusionXLPipeline.from_pretrained(
         model_id,
-        torch_dtype=torch.float16 if device == "cuda" else torch.float32,
+        torch_dtype=torch.float32,  # Use float32 for CPU
         safety_checker=None,  # Disable for testing
-        requires_safety_checker=False
+        requires_safety_checker=False,
+        use_safetensors=True
     )
     pipeline = pipeline.to(device)
     
@@ -117,7 +118,7 @@ def generate_test_images(output_dir: Path, skip_existing: bool = True):
 
 def main():
     """Generate Stable Diffusion test images."""
-    parser = argparse.ArgumentParser(description="Generate test images using Stable Diffusion 1.5")
+    parser = argparse.ArgumentParser(description="Generate test images using Stable Diffusion XL")
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -142,10 +143,7 @@ def main():
             import diffusers
             import torch
             logger.info("✓ Required packages (diffusers, torch) are available")
-            if torch.cuda.is_available():
-                logger.info(f"✓ CUDA available: {torch.cuda.get_device_name()}")
-            else:
-                logger.info("ℹ CUDA not available, will use CPU (slower)")
+            logger.info("ℹ Using CPU for Stable Diffusion XL generation (as requested)")
             return 0
         except ImportError as e:
             logger.error(f"✗ Missing required package: {e}")
