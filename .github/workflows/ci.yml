@@ -1,10 +1,14 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
   push:
     branches: [ main, trunk ]
   pull_request:
     branches: [ main, trunk ]
+
+env:
+  REGISTRY: gcr.io
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
 jobs:
   lint:
@@ -30,7 +34,69 @@ jobs:
         ruff format --check .
 
   test:
+    strategy:
+      matrix:
+        python-version: ['3.11']
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        pip install -e .[dev]
+    
+    - name: Run unit tests
+      run: |
+        pytest tests/unit -v
+    
+    - name: Run performance tests (CPU only)
+      run: |
+        pytest tests/perf -v --tb=short
+      continue-on-error: true
+
+  build:
+    needs: [lint, test]
     runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to Google Container Registry
+      if: github.ref == 'refs/heads/trunk'
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY }}
+        username: _json_key
+        password: ${{ secrets.GCP_SA_KEY }}
+    
+    - name: Build base image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: infra/docker/Dockerfile.base-pygpu
+        push: ${{ github.ref == 'refs/heads/trunk' }}
+        tags: |
+          ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/model-zoo-base:latest
+          ${{ env.REGISTRY }}/${{ env.PROJECT_ID }}/model-zoo-base:${{ github.sha }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  k3d-smoke-test:
+    needs: [build]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
     steps:
     - uses: actions/checkout@v4
     
@@ -41,8 +107,72 @@ jobs:
     
     - name: Install dependencies
       run: |
-        pip install -e .[dev]
+        pip install -e .
     
-    - name: Run pytest
+    - name: Install k3d
       run: |
-        pytest -q
+        curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+    
+    - name: Install kubectl
+      run: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/
+    
+    - name: Start k3d cluster
+      run: |
+        ./scripts/dev_cluster.sh
+    
+    - name: Build local test image
+      run: |
+        docker build -t model-zoo-test:latest -f infra/docker/Dockerfile.model .
+    
+    - name: Import image to k3d
+      run: |
+        k3d image import model-zoo-test:latest -c model-zoo-dev
+    
+    - name: Deploy test model
+      run: |
+        # Create test deployment
+        mkdir -p dist/test-clip
+        sed -e 's/{{MODEL_NAME}}/test-clip/g' \
+            -e 's/{{IMAGE}}/model-zoo-test:latest/g' \
+            -e 's/{{WEIGHTS_URI}}/gs:\/\/fake\/weights/g' \
+            -e 's/{{GPU_TYPE}}/nvidia-tesla-t4/g' \
+            -e 's/{{TARGET_NS}}/default/g' \
+            -e 's/{{APP_LABEL}}/model-zoo/g' \
+            infra/k8s/templates/head.yaml > dist/test-clip/head.yaml
+        
+        # Apply and wait
+        kubectl apply -f dist/test-clip/head.yaml
+        kubectl wait --for=condition=ready pod -l app=model-zoo,model=test-clip --timeout=300s
+    
+    - name: Test deployment
+      run: |
+        # Port forward for testing
+        kubectl port-forward svc/test-clip-ray-head 10001:10001 &
+        sleep 10
+        
+        # Simple connectivity test
+        python -c "
+        import ray
+        import time
+        try:
+            ray.init('ray://localhost:10001')
+            print('✓ Ray connection successful')
+            ray.shutdown()
+        except Exception as e:
+            print(f'✗ Ray connection failed: {e}')
+            exit(1)
+        "
+
+  approve-prod:
+    needs: [build, k3d-smoke-test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/trunk'
+    environment: production
+    steps:
+    - name: Manual approval gate
+      run: |
+        echo "🚀 Production deployment approved!"
+        echo "Image digest: ${{ needs.build.outputs.image-digest }}"

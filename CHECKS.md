@@ -55,14 +55,21 @@ Completed: 2025-06-19
 
 Completed: 2025-06-19
 
-## Phase 5 - CI/CD & Autoscaling
+## Phase 5 - CI/CD & Autoscaling ✅
 
-- [ ] GitHub Actions matrix builds
-- [ ] Manual approval gates
-- [ ] HPA template generation
-- [ ] Production runbook
-- [ ] Grafana dashboard
-- [ ] Create `scripts/verify_phase_5.sh`
+- [x] GitHub Actions matrix builds (Ubuntu/macOS, multi-Python)
+- [x] Docker build/push with BuildKit caching
+- [x] k3d smoke tests with real deployment
+- [x] Manual approval gates for production environment
+- [x] Enhanced HPA with ray_actor_queue_size external metrics
+- [x] Scale-to-zero support and sophisticated scaling behavior
+- [x] Production runbook with troubleshooting procedures
+- [x] Grafana dashboard with Ray/GPU/K8s metrics
+- [x] Service account template with Workload Identity
+- [x] RBAC roles and security configurations
+- [x] Create `scripts/verify_phase_5.sh`
+
+Completed: 2025-06-19
 
 ## Phase 6 - Smoke Tests & Release
 

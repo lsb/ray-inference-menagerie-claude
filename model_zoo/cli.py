@@ -93,7 +93,8 @@ RUN pip install -e .
         "{{WEIGHTS_URI}}": weights,
         "{{GPU_TYPE}}": gpu,
         "{{TARGET_NS}}": namespace,
-        "{{APP_LABEL}}": "model-zoo"
+        "{{APP_LABEL}}": "model-zoo",
+        "{{GCP_PROJECT_ID}}": os.environ.get("GCP_PROJECT_ID", "my-project")
     }
     
     # Render each template

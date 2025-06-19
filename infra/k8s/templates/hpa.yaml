@@ -7,6 +7,27 @@ metadata:
     app: {{APP_LABEL}}
     component: ray-worker
     model: {{MODEL_NAME}}
+  annotations:
+    autoscaling.alpha.kubernetes.io/metrics: |
+      [
+        {
+          "type": "External",
+          "external": {
+            "metric": {
+              "name": "ray_actor_queue_size",
+              "selector": {
+                "matchLabels": {
+                  "model_name": "{{MODEL_NAME}}"
+                }
+              }
+            },
+            "target": {
+              "type": "AverageValue",
+              "averageValue": "1"
+            }
+          }
+        }
+      ]
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -15,32 +36,49 @@ spec:
   minReplicas: 0
   maxReplicas: 10
   metrics:
-  - type: Pods
-    pods:
+  # Primary metric: Ray actor queue size
+  - type: External
+    external:
       metric:
         name: ray_actor_queue_size
         selector:
           matchLabels:
-            actor_name: {{MODEL_NAME}}
+            model_name: {{MODEL_NAME}}
       target:
         type: AverageValue
         averageValue: "1"
+  # Fallback metric: CPU utilization
   - type: Resource
     resource:
       name: cpu
       target:
         type: Utilization
+        averageUtilization: 70
+  # GPU utilization (if available)
+  - type: Resource
+    resource:
+      name: nvidia.com/gpu
+      target:
+        type: Utilization
         averageUtilization: 80
   behavior:
     scaleUp:
-      stabilizationWindowSeconds: 60
+      stabilizationWindowSeconds: 30
       policies:
       - type: Percent
         value: 100
-        periodSeconds: 60
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max
     scaleDown:
       stabilizationWindowSeconds: 300
       policies:
       - type: Percent
-        value: 25
+        value: 50
         periodSeconds: 60
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+      selectPolicy: Min
