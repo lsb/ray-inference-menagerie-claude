@@ -3,6 +3,17 @@ set -euo pipefail
 
 echo "Verifying Model Zoo installation..."
 
+# Check Python version
+echo "Checking Python version..."
+python -c "
+import sys
+if sys.version_info >= (3, 10):
+    print(f'✓ Python {sys.version.split()[0]} (>= 3.10 required)')
+else:
+    print(f'✗ Python {sys.version.split()[0]} (>= 3.10 required)')
+    exit(1)
+"
+
 # Test Python imports
 echo "Testing Python imports..."
 python -c "

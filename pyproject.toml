@@ -7,7 +7,7 @@ name = "model-zoo"
 version = "0.1.0"
 description = "Ray-based ML model deployment system"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = {text = "AGPL-3.0"}
 authors = [
     {name = "Model Zoo Team"},
@@ -46,7 +46,7 @@ model_zoo = ["py.typed"]
 
 [tool.ruff]
 line-length = 88
-target-version = "py311"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "W", "B", "Q"]

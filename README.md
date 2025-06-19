@@ -15,7 +15,15 @@ A production-ready platform for deploying cutting-edge ML models (CLIP, Groundin
 
 ### Prerequisites
 
+**System Requirements:**
+- Python 3.10 or higher
+- Docker Desktop or Docker Engine
+- 8GB+ RAM recommended
+
 ```bash
+# Check Python version
+python --version  # Should be 3.10+
+
 # Install CLI
 pip install -e .
 
@@ -67,6 +75,18 @@ model-zoo --help
 ```
 
 **Troubleshooting Installation:**
+
+If you get a Python version error:
+
+```bash
+# Check your Python version
+python --version
+
+# If you have Python 3.10+ but pip install fails, try:
+python3.10 -m pip install -e .
+# or
+python3.11 -m pip install -e .
+```
 
 If you get a "multiple top level packages" error:
 
@@ -510,7 +530,7 @@ pip install -e .[dev]
 
 ### Dependencies
 
-- **Python**: 3.11+ 
+- **Python**: 3.10+ 
 - **Ray**: 2.9.0+ with default components
 - **Kubernetes**: 1.24+ (GKE Standard or Autopilot)
 - **Storage**: GCS with hierarchical model layout
