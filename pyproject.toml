@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "model-zoo"
+version = "0.1.0"
+description = "Ray-based ML model deployment system"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "AGPL-3.0"}
+authors = [
+    {name = "Model Zoo Team"},
+]
+dependencies = [
+    "ray[default]>=2.9.0",
+    "typer>=0.9.0",
+    "rich>=13.0.0",
+    "kubernetes>=28.0.0",
+    "pydantic>=2.0.0",
+    "transformers>=4.36.0",
+    "torch>=2.1.0",
+    "torchvision>=0.16.0",
+    "pillow>=10.0.0",
+    "numpy>=1.24.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-mock>=3.11.0",
+    "ruff>=0.1.0",
+]
+
+[project.scripts]
+model-zoo = "model_zoo.cli:app"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "B", "Q"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
