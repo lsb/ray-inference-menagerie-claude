@@ -135,23 +135,12 @@ model-zoo deploy clip-test \
 #### Step 5: Create Test Image
 
 ```bash
-# Create a simple test image
-cat > create_test_image.py << 'EOF'
-from PIL import Image
-import numpy as np
+# Create a test image for inference
+python scripts/create_test_image.py --type simple
 
-# Create a red square with white center
-img = Image.new('RGB', (224, 224), color='red')
-pixels = img.load()
-for i in range(80, 144):
-    for j in range(80, 144):
-        pixels[i, j] = (255, 255, 255)
-        
-img.save('test_image.jpg')
-print("Created test_image.jpg")
-EOF
-
-python create_test_image.py
+# This creates test_images/test_image.jpg - a red square with white center
+# You can also create other test images:
+# python scripts/create_test_image.py --type all  # Creates multiple test images
 ```
 
 #### Step 6: Run Inference
@@ -163,9 +152,9 @@ model-zoo list
 
 # Run CLIP inference
 model-zoo infer clip-test \
-  --file test_image.jpg \
+  --file test_images/test_image.jpg \
   --text "a red square with a white center"
-# Alternative: python -m model_zoo.cli infer clip-test --file test_image.jpg --text "a red square with a white center"
+# Alternative: python -m model_zoo.cli infer clip-test --file test_images/test_image.jpg --text "a red square with a white center"
 
 # View logs
 model-zoo logs clip-test --tail

@@ -58,3 +58,8 @@ ray_session_*/
 *.tmp
 temp/
 tmp/
+
+# Generated test images
+test_images/
+*.jpg
+*.png

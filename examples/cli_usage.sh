@@ -23,11 +23,12 @@ echo "model-zoo list"
 echo -e "\n4. View model logs:"
 echo "model-zoo logs clip-vit-base --tail"
 
-# Run inference
-echo -e "\n5. Run inference:"
+# Create test image and run inference
+echo -e "\n5. Create test image and run inference:"
+echo "python scripts/create_test_image.py --type simple"
 echo "model-zoo infer clip-vit-base \\"
-echo "  --file ./image.jpg \\"
-echo "  --text 'a photo of a cat'"
+echo "  --file test_images/test_image.jpg \\"
+echo "  --text 'a red square with a white center'"
 
 # Deploy Grounding DINO + SAM2
 echo -e "\n6. Deploy Grounding DINO + SAM2:"
@@ -39,8 +40,8 @@ echo "  --target gke"
 # Run segmentation
 echo -e "\n7. Run segmentation:"
 echo "model-zoo infer grounding-sam2 \\"
-echo "  --file ./image.jpg \\"
-echo "  --text-prompt 'person'"
+echo "  --file test_images/shapes_test.jpg \\"
+echo "  --text-prompt 'red square'"
 
 # Deploy Qwen VL
 echo -e "\n8. Deploy Qwen VL:"
@@ -52,8 +53,8 @@ echo "  --target gke"
 # Run VQA
 echo -e "\n9. Run visual question answering:"
 echo "model-zoo infer qwen-vl-chat \\"
-echo "  --file ./image.jpg \\"
-echo "  --question 'What objects are in this image?'"
+echo "  --file test_images/shapes_test.jpg \\"
+echo "  --question 'What shapes and colors do you see?'"
 
 # Delete a model
 echo -e "\n10. Delete a model:"
