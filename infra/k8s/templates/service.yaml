@@ -1,1 +1,27 @@
-# Kubernetes service template
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{MODEL_NAME}}-ray-head
+  namespace: {{TARGET_NS}}
+  labels:
+    app: {{APP_LABEL}}
+    component: ray-head
+    model: {{MODEL_NAME}}
+spec:
+  type: LoadBalancer
+  selector:
+    app: {{APP_LABEL}}
+    component: ray-head
+    model: {{MODEL_NAME}}
+  ports:
+  - name: client
+    port: 10001
+    targetPort: 10001
+    protocol: TCP
+  - name: dashboard
+    port: 8265
+    targetPort: 8265
+    protocol: TCP
+  sessionAffinity: ClientIP
+  loadBalancerSourceRanges:
+  - 10.0.0.0/8  # VPN CIDR - update for production

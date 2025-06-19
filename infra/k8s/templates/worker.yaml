@@ -1,1 +1,70 @@
-# Ray worker node deployment template
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{MODEL_NAME}}-ray-worker
+  namespace: {{TARGET_NS}}
+  labels:
+    app: {{APP_LABEL}}
+    component: ray-worker
+    model: {{MODEL_NAME}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{APP_LABEL}}
+      component: ray-worker
+      model: {{MODEL_NAME}}
+  template:
+    metadata:
+      labels:
+        app: {{APP_LABEL}}
+        component: ray-worker
+        model: {{MODEL_NAME}}
+    spec:
+      serviceAccountName: {{MODEL_NAME}}-sa
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
+        cloud.google.com/gke-accelerator: {{GPU_TYPE}}
+      containers:
+      - name: ray-worker
+        image: {{IMAGE}}
+        imagePullPolicy: Always
+        command: ["ray", "start", "--address={{MODEL_NAME}}-ray-head:6379", "--num-gpus=1"]
+        env:
+        - name: RAY_ADDRESS
+          value: "ray://{{MODEL_NAME}}-ray-head:10001"
+        - name: NVIDIA_VISIBLE_DEVICES
+          value: "all"
+        - name: NVIDIA_DRIVER_CAPABILITIES
+          value: "compute,utility"
+        resources:
+          requests:
+            cpu: "4"
+            memory: "16Gi"
+            nvidia.com/gpu: "1"
+          limits:
+            cpu: "8"
+            memory: "32Gi"
+            nvidia.com/gpu: "1"
+        readinessProbe:
+          exec:
+            command:
+              - bash
+              - -c
+              - "ray status"
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        volumeMounts:
+        - name: gcsfuse
+          mountPath: /gcs
+          readOnly: true
+      volumes:
+      - name: gcsfuse
+        emptyDir: {}
+      initContainers:
+      - name: gcsfuse-init
+        image: gcr.io/gke-release/gcs-fuse-csi-driver:latest
+        command: ["sh", "-c", "echo 'GCSFuse mount would be configured here'"]
+        volumeMounts:
+        - name: gcsfuse
+          mountPath: /gcs

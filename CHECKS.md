@@ -16,16 +16,18 @@
 
 Completed: 2025-06-19
 
-## Phase 2 - YAML Templates & Ray Actor Base
+## Phase 2 - YAML Templates & Ray Actor Base ✅
 
-- [ ] Fill YAML templates with placeholder tokens
-- [ ] Create head deployment with ray-head and driver containers
-- [ ] Create worker deployment with GPU support
-- [ ] Create service manifest
-- [ ] Create HPA manifest
-- [ ] Implement `model_zoo/actors/base.py` with HFModelActor
-- [ ] Implement `model_zoo/driver.py`
-- [ ] Create `scripts/verify_phase_2.sh`
+- [x] Fill YAML templates with placeholder tokens
+- [x] Create head deployment with ray-head and driver containers
+- [x] Create worker deployment with GPU support
+- [x] Create service manifest
+- [x] Create HPA manifest
+- [x] Implement `model_zoo/actors/base.py` with HFModelActor
+- [x] Implement `model_zoo/driver.py`
+- [x] Create `scripts/verify_phase_2.sh`
+
+Completed: 2025-06-19
 
 ## Phase 3 - Canonical Model Actors & Synthetic Data
 

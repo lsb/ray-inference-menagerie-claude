@@ -1,1 +1,72 @@
-# Ray head node deployment template
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{MODEL_NAME}}-ray-head
+  namespace: {{TARGET_NS}}
+  labels:
+    app: {{APP_LABEL}}
+    component: ray-head
+    model: {{MODEL_NAME}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{APP_LABEL}}
+      component: ray-head
+      model: {{MODEL_NAME}}
+  template:
+    metadata:
+      labels:
+        app: {{APP_LABEL}}
+        component: ray-head
+        model: {{MODEL_NAME}}
+    spec:
+      serviceAccountName: {{MODEL_NAME}}-sa
+      containers:
+      - name: ray-head
+        image: {{IMAGE}}
+        imagePullPolicy: Always
+        command: ["ray", "start", "--head", "--port=6379", "--dashboard-host=0.0.0.0", "--num-gpus=0"]
+        ports:
+        - containerPort: 6379
+          name: redis
+        - containerPort: 8265
+          name: dashboard
+        - containerPort: 10001
+          name: client
+        env:
+        - name: RAY_ADDRESS
+          value: "ray://localhost:10001"
+        resources:
+          requests:
+            cpu: "2"
+            memory: "4Gi"
+          limits:
+            cpu: "4"
+            memory: "8Gi"
+        readinessProbe:
+          exec:
+            command:
+              - bash
+              - -c
+              - "ray status"
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      - name: driver
+        image: {{IMAGE}}
+        imagePullPolicy: Always
+        command: ["python", "-m", "model_zoo.driver"]
+        env:
+        - name: MODEL_NAME
+          value: {{MODEL_NAME}}
+        - name: WEIGHTS_URI
+          value: {{WEIGHTS_URI}}
+        - name: RAY_ADDRESS
+          value: "ray://localhost:10001"
+        resources:
+          requests:
+            cpu: "1"
+            memory: "2Gi"
+          limits:
+            cpu: "2"
+            memory: "4Gi"
