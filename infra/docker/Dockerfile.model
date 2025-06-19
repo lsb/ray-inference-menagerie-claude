@@ -1,0 +1,25 @@
+FROM model-zoo-base:latest
+
+# Install model dependencies
+RUN pip install --no-cache-dir \
+    transformers>=4.36.0 \
+    torch>=2.1.0 \
+    torchvision>=0.16.0 \
+    pillow>=10.0.0 \
+    numpy>=1.24.0 \
+    ray[default]>=2.9.0
+
+# Copy model zoo package
+WORKDIR /app
+COPY model_zoo ./model_zoo
+COPY pyproject.toml .
+COPY README.md .
+
+# Install package
+RUN pip install -e .
+
+# Set environment
+ENV PYTHONUNBUFFERED=1
+ENV RAY_DEDUP_LOGS=0
+
+CMD ["python", "-m", "model_zoo.driver"]
