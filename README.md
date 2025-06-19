@@ -24,7 +24,7 @@ A production-ready platform for deploying cutting-edge ML models (CLIP, Groundin
 # Check Python version
 python --version  # Should be 3.10+
 
-# Install CLI
+# Install CLI (will automatically install Ray, Typer, Rich, etc.)
 pip install -e .
 
 # For local development
@@ -61,10 +61,8 @@ kubectl version --client
 git clone https://github.com/lsb/ray-inference-menagerie-claude.git
 cd ray-inference-menagerie-claude
 
-# Install dependencies first
-pip install ray[default]>=2.9.0 typer>=0.9.0 rich>=13.0.0 kubernetes>=28.0.0 pillow>=10.0.0
-
-# Install in development mode
+# Install in development mode (automatically installs all dependencies:
+# Ray, Typer, Rich, Kubernetes, PyTorch, Transformers, etc.)
 pip install -e .
 
 # Verify CLI installation
@@ -88,32 +86,21 @@ python3.10 -m pip install -e .
 python3.11 -m pip install -e .
 ```
 
-If you get a "multiple top level packages" error:
+If `pip install -e .` fails completely:
 
 ```bash
-# Alternative 1: Install dependencies manually
-pip install ray[default] typer rich kubernetes pillow transformers torch torchvision numpy pydantic
-
-# Add the project to Python path
+# Alternative 1: Use PYTHONPATH method
+pip install ray[default] typer rich kubernetes pillow
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-
-# Run CLI directly
 python -m model_zoo.cli --help
 ```
 
-Or use the minimal installation:
+If you get dependency conflicts:
 
 ```bash
-# Alternative 2: Minimal install for testing
+# Alternative 2: Minimal install for basic testing
 pip install ray[default] typer rich pillow
-
-# Run without installing
-python -c "
-import sys
-sys.path.insert(0, '.')
-from model_zoo.cli import app
-app()
-" --help
+python -m model_zoo.cli --help
 ```
 
 #### Step 3: Start Local Cluster
@@ -514,10 +501,17 @@ gs://your-bucket/
 ### Development Setup
 
 ```bash
-git clone https://github.com/your-org/model-zoo.git
-cd model-zoo
+git clone https://github.com/lsb/ray-inference-menagerie-claude.git
+cd ray-inference-menagerie-claude
+
+# Install with development dependencies (pytest, ruff, etc.)
 pip install -e .[dev]
-./scripts/dev_cluster.sh  # Start local k3d cluster
+
+# Start local k3d cluster
+./scripts/dev_cluster.sh
+
+# Run tests
+pytest tests/unit -v
 ```
 
 ## 📋 Requirements
