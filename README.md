@@ -49,13 +49,51 @@ kubectl version --client
 #### Step 2: Install Model Zoo CLI
 
 ```bash
-# Clone and install
+# Clone the repository
 git clone https://github.com/lsb/ray-inference-menagerie-claude.git
 cd ray-inference-menagerie-claude
+
+# Install dependencies first
+pip install ray[default]>=2.9.0 typer>=0.9.0 rich>=13.0.0 kubernetes>=28.0.0 pillow>=10.0.0
+
+# Install in development mode
 pip install -e .
 
-# Verify CLI
+# Verify CLI installation
 model-zoo --help
+
+# Or run verification script
+./scripts/verify_install.sh
+```
+
+**Troubleshooting Installation:**
+
+If you get a "multiple top level packages" error:
+
+```bash
+# Alternative 1: Install dependencies manually
+pip install ray[default] typer rich kubernetes pillow transformers torch torchvision numpy pydantic
+
+# Add the project to Python path
+export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+
+# Run CLI directly
+python -m model_zoo.cli --help
+```
+
+Or use the minimal installation:
+
+```bash
+# Alternative 2: Minimal install for testing
+pip install ray[default] typer rich pillow
+
+# Run without installing
+python -c "
+import sys
+sys.path.insert(0, '.')
+from model_zoo.cli import app
+app()
+" --help
 ```
 
 #### Step 3: Start Local Cluster
@@ -82,6 +120,9 @@ model-zoo deploy clip-test \
   --weights gs://fake-bucket/clip/weights \
   --gpu nvidia-tesla-t4 \
   --target k3d
+
+# If using alternative method:
+# python -m model_zoo.cli deploy clip-test --weights gs://fake-bucket/clip/weights --gpu nvidia-tesla-t4 --target k3d
 ```
 
 #### Step 5: Create Test Image
@@ -111,14 +152,17 @@ python create_test_image.py
 ```bash
 # Check deployment status
 model-zoo list
+# Alternative: python -m model_zoo.cli list
 
 # Run CLIP inference
 model-zoo infer clip-test \
   --file test_image.jpg \
   --text "a red square with a white center"
+# Alternative: python -m model_zoo.cli infer clip-test --file test_image.jpg --text "a red square with a white center"
 
 # View logs
 model-zoo logs clip-test --tail
+# Alternative: python -m model_zoo.cli logs clip-test --tail
 ```
 
 #### Step 7: Clean Up
@@ -126,6 +170,7 @@ model-zoo logs clip-test --tail
 ```bash
 # Delete the model
 model-zoo delete clip-test --yes
+# Alternative: python -m model_zoo.cli delete clip-test --yes
 
 # Stop k3d cluster (optional)
 k3d cluster delete model-zoo-dev

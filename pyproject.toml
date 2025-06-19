@@ -37,6 +37,13 @@ dev = [
 [project.scripts]
 model-zoo = "model_zoo.cli:app"
 
+[tool.setuptools]
+packages = ["model_zoo", "model_zoo.actors"]
+include-package-data = true
+
+[tool.setuptools.package-data]
+model_zoo = ["py.typed"]
+
 [tool.ruff]
 line-length = 88
 target-version = "py311"
