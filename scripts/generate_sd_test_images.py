@@ -49,22 +49,22 @@ def generate_test_images(output_dir: Path, skip_existing: bool = True):
     test_specs = [
         {
             "filename": "cat_office_typing.jpg",
-            "prompt": "a cat typing at a computer in a modern office, professional lighting, detailed, photorealistic",
+            "prompt": "a photorealistic domestic cat sitting at a computer desk in a modern office, paws on keyboard, professional lighting, high resolution, ultra detailed, realistic fur texture, sharp focus, professional photography",
             "description": "Cat typing in office (indoor cat scene)"
         },
         {
             "filename": "dog_office_typing.jpg", 
-            "prompt": "a dog typing at a computer in a modern office, professional lighting, detailed, photorealistic",
+            "prompt": "a photorealistic dog sitting at a computer desk in a modern office, paws on keyboard, professional lighting, high resolution, ultra detailed, realistic fur texture, sharp focus, professional photography",
             "description": "Dog typing in office (indoor dog scene)"
         },
         {
             "filename": "cat_mountain_sunrise.jpg",
-            "prompt": "a cat sitting on a mountain peak at sunrise, beautiful landscape, golden hour lighting, detailed, photorealistic",
+            "prompt": "a photorealistic domestic cat sitting on a rocky mountain peak at sunrise, beautiful natural landscape, golden hour lighting, high resolution, ultra detailed, realistic fur texture, sharp focus, landscape photography",
             "description": "Cat on mountain at sunrise (outdoor cat scene)"
         },
         {
             "filename": "dog_mountain_sunrise.jpg",
-            "prompt": "a dog sitting on a mountain peak at sunrise, beautiful landscape, golden hour lighting, detailed, photorealistic", 
+            "prompt": "a photorealistic dog sitting on a rocky mountain peak at sunrise, beautiful natural landscape, golden hour lighting, high resolution, ultra detailed, realistic fur texture, sharp focus, landscape photography", 
             "description": "Dog on mountain at sunrise (outdoor dog scene)"
         }
     ]
@@ -72,14 +72,14 @@ def generate_test_images(output_dir: Path, skip_existing: bool = True):
     # Set up pipeline
     pipeline = setup_pipeline()
     
-    # Generation parameters
+    # Generation parameters optimized for photorealistic images
     generation_params = {
-        "height": 512,
-        "width": 512,
-        "num_inference_steps": 50,
-        "guidance_scale": 7.5,
+        "height": 1024,  # High resolution as requested
+        "width": 1024,
+        "num_inference_steps": 20,  # Fast generation with 20 steps
+        "guidance_scale": 8.0,  # Higher guidance for better prompt adherence
         "num_images_per_prompt": 1,
-        "generator": torch.Generator(device=pipeline.device).manual_seed(42)  # Fixed seed for reproducibility
+        "generator": torch.Generator(device=pipeline.device).manual_seed(12345)  # New seed for regeneration
     }
     
     output_dir.mkdir(parents=True, exist_ok=True)
