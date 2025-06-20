@@ -1,3 +1,4 @@
+import ray
 import torch
 from PIL import Image
 from typing import Dict, Any
@@ -11,6 +12,7 @@ from model_zoo.actors.base import HFModelActor
 logger = logging.getLogger(__name__)
 
 
+@ray.remote(num_gpus=1)
 class QwenVLActor(HFModelActor):
     """Qwen 2.5 VL model actor for visual question answering."""
     

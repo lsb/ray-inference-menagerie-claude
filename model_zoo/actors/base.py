@@ -6,7 +6,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-@ray.remote(num_gpus=1)
 class HFModelActor(ABC):
     """Base class for Hugging Face model actors.
     

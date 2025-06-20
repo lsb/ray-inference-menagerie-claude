@@ -1,3 +1,4 @@
+import ray
 import torch
 import numpy as np
 from PIL import Image
@@ -13,6 +14,7 @@ from model_zoo.actors.base import HFModelActor
 logger = logging.getLogger(__name__)
 
 
+@ray.remote(num_gpus=1)
 class GroundingDINO_SAM2_Actor(HFModelActor):
     """Grounding DINO + SAM2 actor for object detection and segmentation."""
     
