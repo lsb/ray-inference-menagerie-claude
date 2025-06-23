@@ -88,11 +88,24 @@ class CLIPActor(HFModelActor):
             # Run inference
             with torch.no_grad():
                 outputs = self.model(**inputs)
-                logits_per_image = outputs.logits_per_image
-                probs = logits_per_image.softmax(dim=1)
-                similarity = probs.cpu().numpy()[0, 0].item()
+                # Get raw similarity logits from CLIP 
+                # CLIP outputs logits scaled by learnable temperature parameter
+                # We'll use the raw cosine similarity before temperature scaling
+                image_embeds = outputs.image_embeds
+                text_embeds = outputs.text_embeds
+                
+                # Normalize embeddings
+                image_embeds = image_embeds / image_embeds.norm(p=2, dim=-1, keepdim=True)
+                text_embeds = text_embeds / text_embeds.norm(p=2, dim=-1, keepdim=True)
+                
+                # Compute cosine similarity (dot product of normalized vectors)
+                cosine_similarity = torch.sum(image_embeds * text_embeds, dim=-1)
+                raw_similarity = cosine_similarity.cpu().numpy()[0].item()
+                
+                # Convert from [-1, 1] to [0, 1] range for API consistency
+                normalized_similarity = (raw_similarity + 1.0) / 2.0
             
-            return {"similarity": float(similarity)}
+            return {"similarity": float(normalized_similarity)}
             
         except Exception as e:
             logger.error(f"Inference error: {e}")

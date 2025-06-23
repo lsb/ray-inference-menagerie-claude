@@ -55,14 +55,14 @@ class TestCLIPCPU:
         processor = clip_model_cpu["processor"]
         device = clip_model_cpu["device"]
         
-        # Test cat images with cat prompt
+        # Test cat images
         for img_name, img_path in TEST_IMAGES.items():
             if "cat" in img_name:
                 image = Image.open(img_path).convert("RGB")
                 
-                # Test with cat prompt (should have high similarity)
+                # Compare both prompts in a single inference call
                 inputs = processor(
-                    text=["a cat"], 
+                    text=["a cat", "a dog"], 
                     images=image, 
                     return_tensors="pt", 
                     padding=True
@@ -71,29 +71,43 @@ class TestCLIPCPU:
                 
                 with torch.no_grad():
                     outputs = model(**inputs)
-                    logits = outputs.logits_per_image
-                    cat_similarity = logits.softmax(dim=1)[0, 0].item()
-                
-                # Test with dog prompt (should have lower similarity)
-                inputs = processor(
-                    text=["a dog"], 
-                    images=image, 
-                    return_tensors="pt", 
-                    padding=True
-                )
-                inputs = {k: v.to(device) for k, v in inputs.items()}
-                
-                with torch.no_grad():
-                    outputs = model(**inputs)
-                    logits = outputs.logits_per_image
-                    dog_similarity = logits.softmax(dim=1)[0, 0].item()
+                    probs = outputs.logits_per_image.softmax(dim=1)
+                    cat_similarity = probs[0, 0].item()
+                    dog_similarity = probs[0, 1].item()
                 
                 print(f"\n{img_name}:")
                 print(f"  Cat similarity: {cat_similarity:.3f}")
                 print(f"  Dog similarity: {dog_similarity:.3f}")
                 
                 # Cat images should have higher similarity with "cat" than "dog"
-                assert cat_similarity >= dog_similarity, f"Cat image {img_name} classified incorrectly"
+                assert cat_similarity > dog_similarity, f"Cat image {img_name} classified incorrectly"
+        
+        # Test dog images
+        for img_name, img_path in TEST_IMAGES.items():
+            if "dog" in img_name:
+                image = Image.open(img_path).convert("RGB")
+                
+                # Compare both prompts in a single inference call
+                inputs = processor(
+                    text=["a cat", "a dog"], 
+                    images=image, 
+                    return_tensors="pt", 
+                    padding=True
+                )
+                inputs = {k: v.to(device) for k, v in inputs.items()}
+                
+                with torch.no_grad():
+                    outputs = model(**inputs)
+                    probs = outputs.logits_per_image.softmax(dim=1)
+                    cat_similarity = probs[0, 0].item()
+                    dog_similarity = probs[0, 1].item()
+                
+                print(f"\n{img_name}:")
+                print(f"  Cat similarity: {cat_similarity:.3f}")
+                print(f"  Dog similarity: {dog_similarity:.3f}")
+                
+                # Dog images should have higher similarity with "dog" than "cat"
+                assert dog_similarity > cat_similarity, f"Dog image {img_name} classified incorrectly"
     
     def test_clip_indoor_vs_outdoor_classification(self, clip_model_cpu):
         """Test that CLIP can distinguish indoor vs outdoor scenes."""

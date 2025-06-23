@@ -92,12 +92,12 @@ async def test_clip_actor_e2e():
             
             print(f"     Cat similarity: {cat_sim:.3f} ({cat_time:.2f}s)")
             print(f"     Dog similarity: {dog_sim:.3f} ({dog_time:.2f}s)")
-            print(f"     ✓ Classification: {'CORRECT' if cat_sim >= dog_sim else 'INCORRECT'}")
+            print(f"     ✓ Classification: {'CORRECT' if cat_sim > dog_sim else 'INCORRECT'}")
             
             results[img_name] = {
                 "cat_similarity": cat_sim,
                 "dog_similarity": dog_sim,
-                "correct": cat_sim >= dog_sim,
+                "correct": cat_sim > dog_sim,
                 "inference_time": (cat_time + dog_time) / 2
             }
             
@@ -119,12 +119,12 @@ async def test_clip_actor_e2e():
             
             print(f"     Cat similarity: {cat_sim:.3f} ({cat_time:.2f}s)")
             print(f"     Dog similarity: {dog_sim:.3f} ({dog_time:.2f}s)")
-            print(f"     ✓ Classification: {'CORRECT' if dog_sim >= cat_sim else 'INCORRECT'}")
+            print(f"     ✓ Classification: {'CORRECT' if dog_sim > cat_sim else 'INCORRECT'}")
             
             results[img_name] = {
                 "cat_similarity": cat_sim,
                 "dog_similarity": dog_sim,
-                "correct": dog_sim >= cat_sim,
+                "correct": dog_sim > cat_sim,
                 "inference_time": (cat_time + dog_time) / 2
             }
     
