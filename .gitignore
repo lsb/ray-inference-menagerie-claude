@@ -50,6 +50,7 @@ ray_session_*/
 *.pt
 *.bin
 *.safetensors
+*.pytorch
 
 # Logs
 *.log

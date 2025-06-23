@@ -10,7 +10,7 @@ import io
 
 
 # Test image paths  
-FIXTURES_DIR = Path(__file__).parent / "test_images" / "fixtures"
+FIXTURES_DIR = Path(__file__).parent.parent.parent / "test_images" / "fixtures"
 TEST_IMAGES = {
     "cat_office": FIXTURES_DIR / "cat_office_typing.jpg",
     "dog_office": FIXTURES_DIR / "dog_office_typing.jpg", 
@@ -43,7 +43,9 @@ async def test_clip_actor_e2e():
     from model_zoo.actors.clip import CLIPActor
     
     # Create actor with CPU-only config (override GPU requirement for testing)
-    actor = CLIPActor.options(num_gpus=0).remote("clip-e2e-test", "gs://fake/weights")
+    # Use local weights file
+    weights_path = Path(__file__).parent.parent.parent / "clip-vit-base-patch32.pytorch"
+    actor = CLIPActor.options(num_gpus=0).remote("clip-e2e-test", str(weights_path))
     print("   ✓ CLIP actor created")
     
     # Test actor readiness

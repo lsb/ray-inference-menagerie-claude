@@ -31,6 +31,11 @@ pip install -e .
 # Install k3d and kubectl for local development
 ./scripts/install_prerequisites.sh
 
+# Download CLIP weights for local testing (577MB)
+# Note: The weights file is gitignored due to size
+curl -L https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/pytorch_model.bin \
+  -o clip-vit-base-patch32.pytorch
+
 # For GKE production
 gcloud auth login
 kubectl config current-context  # Should point to your GKE cluster

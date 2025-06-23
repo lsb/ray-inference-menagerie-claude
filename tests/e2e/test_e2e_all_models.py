@@ -10,7 +10,7 @@ import io
 
 
 # Test image paths  
-FIXTURES_DIR = Path(__file__).parent / "test_images" / "fixtures"
+FIXTURES_DIR = Path(__file__).parent.parent.parent / "test_images" / "fixtures"
 TEST_IMAGES = {
     "cat_office": FIXTURES_DIR / "cat_office_typing.jpg",
     "dog_office": FIXTURES_DIR / "dog_office_typing.jpg", 
@@ -45,7 +45,9 @@ async def test_all_models_e2e():
     from model_zoo.actors.qwen_vl import QwenVLActor
     
     # Create actors with CPU-only config
-    clip_actor = CLIPActor.options(num_gpus=0).remote("clip-test", "gs://fake/weights")
+    # Use local weights file for CLIP
+    weights_path = Path(__file__).parent.parent.parent / "clip-vit-base-patch32.pytorch"
+    clip_actor = CLIPActor.options(num_gpus=0).remote("clip-test", str(weights_path))
     gd_sam_actor = GroundingDINO_SAM2_Actor.options(num_gpus=0).remote("gd-sam-test", "gs://fake/weights")
     qwen_actor = QwenVLActor.options(num_gpus=0).remote("qwen-test", "gs://fake/weights")
     
@@ -137,8 +139,8 @@ async def test_all_models_e2e():
     print("\n6. Testing horizontal scaling with multiple CLIP actors...")
     
     # Create additional CLIP actors
-    clip_actor_2 = CLIPActor.options(num_gpus=0).remote("clip-test-2", "gs://fake/weights")
-    clip_actor_3 = CLIPActor.options(num_gpus=0).remote("clip-test-3", "gs://fake/weights")
+    clip_actor_2 = CLIPActor.options(num_gpus=0).remote("clip-test-2", str(weights_path))
+    clip_actor_3 = CLIPActor.options(num_gpus=0).remote("clip-test-3", str(weights_path))
     
     # Wait for readiness
     await asyncio.gather(

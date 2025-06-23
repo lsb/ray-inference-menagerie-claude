@@ -18,12 +18,32 @@ class CLIPActor(HFModelActor):
     
     async def _load_model(self):
         """Load CLIP model and processor."""
-        # For now, use default model. In production, load from weights_uri
-        model_name = "openai/clip-vit-base-patch32"
-        
-        logger.info(f"Loading CLIP model: {model_name}")
-        self.model = CLIPModel.from_pretrained(model_name)
-        self.processor = CLIPProcessor.from_pretrained(model_name)
+        # Check if we have a local weights file
+        if self.weights_uri and self.weights_uri.endswith('.pytorch'):
+            # Load from local weights file
+            logger.info(f"Loading CLIP model from local weights: {self.weights_uri}")
+            
+            # Load the model architecture first
+            model_name = "openai/clip-vit-base-patch32"
+            self.model = CLIPModel.from_pretrained(model_name)
+            self.processor = CLIPProcessor.from_pretrained(model_name)
+            
+            # Load the weights from local file
+            if self.weights_uri.startswith("file://"):
+                weights_path = self.weights_uri[7:]  # Remove file:// prefix
+            else:
+                weights_path = self.weights_uri
+                
+            # Load state dict from the .pytorch file
+            state_dict = torch.load(weights_path, map_location='cpu')
+            self.model.load_state_dict(state_dict, strict=False)
+            logger.info(f"Loaded weights from {weights_path}")
+        else:
+            # Load from HuggingFace or use default
+            model_name = "openai/clip-vit-base-patch32"
+            logger.info(f"Loading CLIP model from HuggingFace: {model_name}")
+            self.model = CLIPModel.from_pretrained(model_name)
+            self.processor = CLIPProcessor.from_pretrained(model_name)
         
         # Move model to GPU if available
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

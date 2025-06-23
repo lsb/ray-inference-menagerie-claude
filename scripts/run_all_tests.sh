@@ -27,11 +27,11 @@ pytest tests/unit/test_cli.py::test_logs_command tests/unit/test_cli.py::test_li
 echo ""
 echo "4. Running end-to-end Ray actor tests..."
 echo "   → Testing single CLIP actor..."
-python tests/e2e/test_e2e_local.py
+python -m pytest tests/e2e/test_e2e_local.py::test_clip_actor_e2e -v -s
 
 echo ""
 echo "   → Testing all model types with concurrent inference..."
-python tests/e2e/test_e2e_all_models.py
+python -m pytest tests/e2e/test_e2e_all_models.py::test_all_models_e2e -v -s
 
 # Performance validation
 echo ""

@@ -20,8 +20,10 @@ def ray_fixture():
 @pytest.mark.asyncio
 async def test_clip_actor_performance(ray_fixture):
     """Test CLIP actor initialization and inference performance."""
-    # Create actor
-    actor = CLIPActor.remote("clip-test", "gs://fake/weights")
+    # Create actor with local weights
+    from pathlib import Path
+    weights_path = Path(__file__).parent.parent.parent / "clip-vit-base-patch32.pytorch"
+    actor = CLIPActor.remote("clip-test", str(weights_path))
     
     # Test initialization
     start_time = time.time()
@@ -110,7 +112,9 @@ async def test_qwen_vl_actor_performance(ray_fixture):
 async def test_all_actors_concurrent(ray_fixture):
     """Test all actors running concurrently."""
     # Create all actors
-    clip_actor = CLIPActor.remote("clip-concurrent", "gs://fake/weights")
+    from pathlib import Path
+    weights_path = Path(__file__).parent.parent.parent / "clip-vit-base-patch32.pytorch"
+    clip_actor = CLIPActor.remote("clip-concurrent", str(weights_path))
     grounding_actor = GroundingDINO_SAM2_Actor.remote("grounding-concurrent", "gs://fake/weights")
     qwen_actor = QwenVLActor.remote("qwen-concurrent", "gs://fake/weights")
     

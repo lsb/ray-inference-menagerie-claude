@@ -38,8 +38,9 @@ async def test_clip_cat_vs_dog_classification(ray_fixture):
     """Test that CLIP can distinguish cats from dogs correctly."""
     from model_zoo.actors.clip import CLIPActor
     
-    # Create actor
-    actor = CLIPActor.remote("clip-validation", "gs://fake/weights")
+    # Create actor with local weights
+    weights_path = Path(__file__).parent.parent.parent / "clip-vit-base-patch32.pytorch"
+    actor = CLIPActor.remote("clip-validation", str(weights_path))
     
     # Wait for readiness
     ready = await actor.ready.remote()
@@ -87,8 +88,9 @@ async def test_clip_indoor_vs_outdoor_classification(ray_fixture):
     """Test that CLIP can distinguish indoor from outdoor scenes."""
     from model_zoo.actors.clip import CLIPActor
     
-    # Create actor  
-    actor = CLIPActor.remote("clip-scene-validation", "gs://fake/weights")
+    # Create actor with local weights
+    weights_path = Path(__file__).parent.parent.parent / "clip-vit-base-patch32.pytorch"
+    actor = CLIPActor.remote("clip-scene-validation", str(weights_path))
     
     # Wait for readiness
     ready = await actor.ready.remote()
@@ -233,7 +235,8 @@ async def test_performance_across_all_models(ray_fixture):
     from model_zoo.actors.qwen_vl import QwenVLActor
     
     # Create all actors
-    clip_actor = CLIPActor.remote("clip-perf", "gs://fake/weights")
+    weights_path = Path(__file__).parent.parent.parent / "clip-vit-base-patch32.pytorch"
+    clip_actor = CLIPActor.remote("clip-perf", str(weights_path))
     grounding_actor = GroundingDINO_SAM2_Actor.remote("grounding-perf", "gs://fake/weights")
     qwen_actor = QwenVLActor.remote("qwen-perf", "gs://fake/weights")
     

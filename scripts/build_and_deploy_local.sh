@@ -23,10 +23,18 @@ docker build -t "model-zoo-$MODEL_NAME:latest" -f infra/docker/Dockerfile.model 
 echo "Importing image into k3d cluster..."
 k3d image import "model-zoo-$MODEL_NAME:latest" -c "$CLUSTER_NAME"
 
-# Deploy CLIP model (uses CPU in local mode)
+# Deploy model (uses CPU in local mode)
 echo "Deploying $MODEL_NAME model..."
+
+# Use local weights file for CLIP
+if [[ "$MODEL_NAME" == *"clip"* ]]; then
+    WEIGHTS_PATH="$(pwd)/clip-vit-base-patch32.pytorch"
+else
+    WEIGHTS_PATH="gs://fake-bucket/$MODEL_NAME/weights"
+fi
+
 model-zoo deploy "$MODEL_NAME" \
-  --weights "gs://fake-bucket/$MODEL_NAME/weights" \
+  --weights "$WEIGHTS_PATH" \
   --gpu nvidia-tesla-t4 \
   --target k3d
 
