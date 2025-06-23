@@ -1,13 +1,11 @@
-FROM model-zoo-base:latest
+# Use Python 3.11 with CUDA support for production, or CPU-only for local development
+ARG BASE_IMAGE=python:3.11-slim
+FROM ${BASE_IMAGE}
 
-# Install model dependencies
-RUN pip install --no-cache-dir \
-    transformers>=4.36.0 \
-    torch>=2.1.0 \
-    torchvision>=0.16.0 \
-    pillow>=10.0.0 \
-    numpy>=1.24.0 \
-    ray[default]>=2.9.0
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy model zoo package
 WORKDIR /app
@@ -15,8 +13,8 @@ COPY model_zoo ./model_zoo
 COPY pyproject.toml .
 COPY README.md .
 
-# Install package
-RUN pip install -e .
+# Install package with all dependencies
+RUN pip install --no-cache-dir -e .
 
 # Set environment
 ENV PYTHONUNBUFFERED=1

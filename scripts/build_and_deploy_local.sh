@@ -15,9 +15,12 @@ if ! k3d cluster list | grep -q "$CLUSTER_NAME"; then
     exit 1
 fi
 
-# Build Docker image locally
+# Build Docker image locally (using CPU-only base for local development)
 echo "Building Docker image..."
-docker build -t "model-zoo-$MODEL_NAME:latest" -f infra/docker/Dockerfile.model .
+docker build \
+    --build-arg BASE_IMAGE=python:3.11-slim \
+    -t "model-zoo-$MODEL_NAME:latest" \
+    -f infra/docker/Dockerfile.model .
 
 # Import image into k3d
 echo "Importing image into k3d cluster..."
@@ -29,6 +32,16 @@ echo "Deploying $MODEL_NAME model..."
 # Use local weights file for CLIP
 if [[ "$MODEL_NAME" == *"clip"* ]]; then
     WEIGHTS_PATH="$(pwd)/clip-vit-base-patch32.pytorch"
+    
+    # Check if weights file exists
+    if [[ ! -f "$WEIGHTS_PATH" ]]; then
+        echo "❌ CLIP weights file not found: $WEIGHTS_PATH"
+        echo "Download it first with:"
+        echo "curl -L https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/pytorch_model.bin -o clip-vit-base-patch32.pytorch"
+        exit 1
+    fi
+    
+    echo "✅ Using local CLIP weights: $WEIGHTS_PATH"
 else
     WEIGHTS_PATH="gs://fake-bucket/$MODEL_NAME/weights"
 fi

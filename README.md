@@ -49,7 +49,13 @@ If installation fails, run the troubleshooting script:
 
 ### Local Development (k3d)
 
-#### Quick Start
+#### Quick Start (Ray Actors Only - Recommended)
+```bash
+# Simple testing without Docker/k3d complexity
+./scripts/test_local_no_docker.sh
+```
+
+#### Full k3d Deployment
 ```bash
 # 1. Start local k3d cluster
 ./scripts/dev_cluster.sh
