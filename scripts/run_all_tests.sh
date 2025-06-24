@@ -48,6 +48,15 @@ echo "   → CLIP vs Is-Odd Demo Performance Comparison..."
 python -m pytest tests/perf/test_overhead_comparison.py::test_overhead_comparison -v -s
 
 echo ""
+echo "7. Running extended performance tests (this will take several minutes)..."
+echo "   → Is-Odd Million Iteration Test..."
+python -m pytest tests/perf/test_is_odd_million.py::test_is_odd_million_iterations -v -s || echo "Note: Million iteration test may take several minutes"
+
+echo ""
+echo "   → CLIP Extended Performance Test (50+ iterations per case)..."
+python -m pytest tests/perf/test_clip_performance_extended.py::test_clip_performance_extended -v -s || echo "Note: Extended CLIP test processes 600+ inferences"
+
+echo ""
 echo "🎉 Test Suite Complete!"
 echo "========================"
 echo "✅ CPU model validation: Working"

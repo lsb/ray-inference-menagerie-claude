@@ -190,17 +190,25 @@ pytest tests/perf/test_canaries.py -v
 
 **Performance Analysis Tests**:
 ```bash
-# CLIP performance testing
-python -m pytest tests/perf/test_clip_performance.py -v -s
-
-# Ray overhead comparison (is-odd vs CLIP)
+# Quick performance comparison
 python -m pytest tests/perf/test_overhead_comparison.py -v -s
 
+# Extended performance tests (several minutes each)
+./scripts/run_extended_perf_tests.sh
+
+# Individual extended tests:
+# Is-Odd million iteration test (~2-5 minutes)
+python -m pytest tests/perf/test_is_odd_million.py -v -s
+
+# CLIP extended test with 50+ iterations per case (~3-5 minutes)
+python -m pytest tests/perf/test_clip_performance_extended.py -v -s
+
 # Expected results:
-# ✅ Ray infrastructure overhead: ~1ms per inference
-# ✅ CLIP ML model overhead: ~80ms per inference  
+# ✅ Ray infrastructure overhead: ~1ms per inference (measured over 1M iterations)
+# ✅ CLIP ML model overhead: ~80ms per inference (measured over 600+ iterations)
 # ✅ Ray overhead is <2% of total CLIP inference time
-# ✅ Concurrent inference improves throughput significantly
+# ✅ Detailed latency percentiles (P50, P90, P95, P99)
+# ✅ Throughput measurements under concurrent load
 ```
 
 ### Test Results Summary

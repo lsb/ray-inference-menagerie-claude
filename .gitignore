@@ -65,3 +65,6 @@ test_images/sd_generated/
 test_images/*.jpg
 test_images/*.png
 !test_images/fixtures/
+
+# Performance test results
+clip_performance_results.json
