@@ -68,6 +68,9 @@ model-zoo infer clip-test \
   --file test_images/fixtures/cat_office_typing.jpg \
   --text "a cat typing at a computer"
 
+# Test Ray overhead with demo model (no image needed)
+model-zoo infer is-odd-demo --number 42
+
 # 4. View logs and status
 model-zoo logs clip-test --tail
 model-zoo list
@@ -202,6 +205,7 @@ Our comprehensive test suite validates:
 | **CLIP** | Image-Text Similarity | `image + text` | `{similarity: float}` | `--text "a red car"` |
 | **Grounding DINO + SAM2** | Object Detection + Segmentation | `image + text_prompt` | `{mask_png_b64: str}` | `--text-prompt "person"` |
 | **Qwen 2.5 VL** | Visual Question Answering | `image + question` | `{answer: str}` | `--question "What's in the image?"` |
+| **Is-Odd Demo** | Ray Overhead Measurement | `number` | `{is_odd: bool, result: str}` | `--number 42` |
 
 ## 🔧 Adding a New Model (5 Steps)
 

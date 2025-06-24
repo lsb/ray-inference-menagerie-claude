@@ -199,10 +199,11 @@ def logs(
 @app.command()
 def infer(
     model_name: str = typer.Argument(..., help="Model name"),
-    file: Path = typer.Option(..., "--file", help="Input file path"),
+    file: Optional[Path] = typer.Option(None, "--file", help="Input file path"),
     question: Optional[str] = typer.Option(None, "--question", help="Question for VQA models"),
     text: Optional[str] = typer.Option(None, "--text", help="Text for CLIP models"),
     text_prompt: Optional[str] = typer.Option(None, "--text-prompt", help="Text prompt for Grounding DINO"),
+    number: Optional[int] = typer.Option(None, "--number", help="Number for is-odd demo model"),
     namespace: str = typer.Option("default", "--namespace", "-n", help="Kubernetes namespace")
 ):
     """Run inference on a deployed model."""
@@ -231,33 +232,43 @@ def infer(
     else:
         ip = "localhost"  # k3d
     
-    # Load and encode image
-    if not file.exists():
-        console.print(f"[red]File not found: {file}[/red]")
-        raise typer.Exit(1)
-    
-    with open(file, "rb") as f:
-        image_b64 = base64.b64encode(f.read()).decode("utf-8")
-    
     # Build payload based on model type
-    if "clip" in model_name:
-        if not text:
-            console.print("[red]--text required for CLIP models[/red]")
+    if "is-odd" in model_name or "is_odd" in model_name:
+        if number is None:
+            console.print("[red]--number required for is-odd demo model[/red]")
             raise typer.Exit(1)
-        payload = {"image_b64": image_b64, "text": text}
-    elif "grounding" in model_name or "sam2" in model_name:
-        if not text_prompt:
-            console.print("[red]--text-prompt required for Grounding DINO models[/red]")
-            raise typer.Exit(1)
-        payload = {"image_b64": image_b64, "text_prompt": text_prompt}
-    elif "qwen" in model_name:
-        if not question:
-            console.print("[red]--question required for Qwen VL models[/red]")
-            raise typer.Exit(1)
-        payload = {"image_b64": image_b64, "question": question}
+        payload = {"number": number}
     else:
-        console.print(f"[red]Unknown model type: {model_name}[/red]")
-        raise typer.Exit(1)
+        # Load and encode image for image-based models
+        if not file:
+            console.print(f"[red]--file required for image-based models[/red]")
+            raise typer.Exit(1)
+        if not file.exists():
+            console.print(f"[red]File not found: {file}[/red]")
+            raise typer.Exit(1)
+        
+        with open(file, "rb") as f:
+            image_b64 = base64.b64encode(f.read()).decode("utf-8")
+    
+        # Build payload for image-based models
+        if "clip" in model_name:
+            if not text:
+                console.print("[red]--text required for CLIP models[/red]")
+                raise typer.Exit(1)
+            payload = {"image_b64": image_b64, "text": text}
+        elif "grounding" in model_name or "sam2" in model_name:
+            if not text_prompt:
+                console.print("[red]--text-prompt required for Grounding DINO models[/red]")
+                raise typer.Exit(1)
+            payload = {"image_b64": image_b64, "text_prompt": text_prompt}
+        elif "qwen" in model_name:
+            if not question:
+                console.print("[red]--question required for Qwen VL models[/red]")
+                raise typer.Exit(1)
+            payload = {"image_b64": image_b64, "question": question}
+        else:
+            console.print(f"[red]Unknown model type: {model_name}[/red]")
+            raise typer.Exit(1)
     
     # Run inference
     console.print(f"[yellow]Running inference on {model_name}...[/yellow]")

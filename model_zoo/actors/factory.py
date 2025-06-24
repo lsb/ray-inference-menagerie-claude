@@ -21,5 +21,8 @@ def make() -> Type[HFModelActor]:
     elif "qwen" in model_name:
         from model_zoo.actors.qwen_vl import QwenVLActor
         return QwenVLActor
+    elif "is-odd" in model_name or "is_odd" in model_name:
+        from model_zoo.actors.is_odd import IsOddActor
+        return IsOddActor
     else:
         raise ValueError(f"Unknown model name: {model_name}")

@@ -16,7 +16,7 @@ python -c "import ray, torch, transformers, pytest" || {
 # CPU-only model tests
 echo ""
 echo "2. Running CPU-only model tests..."
-pytest tests/cpu/test_models_cpu.py -v
+pytest tests/cpu/test_models_cpu.py tests/cpu/test_is_odd_cpu.py -v
 
 # CLI unit tests
 echo ""
@@ -32,6 +32,10 @@ python -m pytest tests/e2e/test_e2e_local.py::test_clip_actor_e2e -v -s
 echo ""
 echo "   → Testing all model types with concurrent inference..."
 python -m pytest tests/e2e/test_e2e_all_models.py::test_all_models_e2e -v -s
+
+echo ""
+echo "   → Testing is-odd demo actor (Ray overhead measurement)..."
+python -m pytest tests/e2e/test_is_odd_e2e.py::test_is_odd_actor_e2e -v -s
 
 # Performance validation
 echo ""
