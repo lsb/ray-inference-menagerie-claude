@@ -428,6 +428,7 @@ pip install -e .[dev]
 ### Dependencies
 
 - **Python**: 3.10+ 
+- **PyTorch**: 2.7.1+ (with torchvision 0.18.1+)
 - **Ray**: 2.9.0+ with default components
 - **Kubernetes**: 1.24+ (GKE Standard or Autopilot)
 - **Storage**: GCS with hierarchical model layout
