@@ -35,18 +35,26 @@ python -m pytest tests/perf/test_is_odd_million.py::test_is_odd_million_iteratio
 is_odd_time=$(($(date +%s) - start_time))
 echo "   ✓ Is-Odd test completed in ${is_odd_time}s"
 
-# CLIP Extended Performance Test  
+# Generate test image formats if needed
+if [[ ! -d "test_images/formats" ]]; then
+    echo ""
+    echo "3. Generating test image formats..."
+    python scripts/generate_test_image_formats.py
+fi
+
+# CLIP Comprehensive Performance Test  
 echo ""
-echo "3. Running CLIP Extended Performance Test"
-echo "   This will run 50 iterations for each of 12 test cases (600+ total)"
-echo "   Expected time: 3-5 minutes"
+echo "3. Running CLIP Comprehensive Performance Test"
+echo "   This will test multiple image formats with 500 iterations each"
+echo "   12 images × 500 iterations × 2 classifications = 12,000 total inferences"
+echo "   Expected time: 10-15 minutes"
 echo ""
 
 start_time=$(date +%s)
-python -m pytest tests/perf/test_clip_performance_extended.py::test_clip_performance_extended -v -s
+python -m pytest tests/perf/test_clip_comprehensive.py::test_clip_comprehensive -v -s
 
 clip_time=$(($(date +%s) - start_time))
-echo "   ✓ CLIP test completed in ${clip_time}s"
+echo "   ✓ CLIP comprehensive test completed in ${clip_time}s"
 
 # Summary
 total_time=$((is_odd_time + clip_time))

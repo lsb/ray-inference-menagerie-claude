@@ -200,15 +200,17 @@ python -m pytest tests/perf/test_overhead_comparison.py -v -s
 # Is-Odd million iteration test (~2-5 minutes)
 python -m pytest tests/perf/test_is_odd_million.py -v -s
 
-# CLIP extended test with 50+ iterations per case (~3-5 minutes)
-python -m pytest tests/perf/test_clip_performance_extended.py -v -s
+# CLIP comprehensive test: multiple formats + classifications (~10-15 minutes)
+python -m pytest tests/perf/test_clip_comprehensive.py -v -s
 
 # Expected results:
 # ✅ Ray infrastructure overhead: ~1ms per inference (measured over 1M iterations)
-# ✅ CLIP ML model overhead: ~80ms per inference (measured over 600+ iterations)
+# ✅ CLIP ML model overhead: ~80ms per inference (measured over 12,000 iterations)
 # ✅ Ray overhead is <2% of total CLIP inference time
-# ✅ Detailed latency percentiles (P50, P90, P95, P99)
-# ✅ Throughput measurements under concurrent load
+# ✅ Cat/Dog classification accuracy across image formats
+# ✅ Indoor/Outdoor classification accuracy across formats
+# ✅ Detailed latency percentiles (P50, P90, P95, P99) for each format
+# ✅ Performance comparison: low-res JPG vs high-res JPG vs BMP
 ```
 
 ### Test Results Summary
